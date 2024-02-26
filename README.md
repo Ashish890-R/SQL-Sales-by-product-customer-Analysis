@@ -1,12 +1,12 @@
 # SQL-Sales-by-product-customer-Analysis-----
 
-        For many of us in the tech world, SQL (Structured Query Language) is the backbone of data management and analysis. It's a critical skill, whether you're a data analyst, software developer, business analyst, or a professional in virtually any field that relies on data.
+For many of us in the tech world, SQL (Structured Query Language) is the backbone of data management and analysis. It's a critical skill, whether you're a data analyst, software developer, business analyst, or a professional in virtually any field that relies on data.
 
 Now, let's understand AtliQ's business model. In the industry, domain understanding is actually more important than technical skills.
- 1. Gross monthly total sales report for Croma
+
+ 1. **Gross monthly total sales report for Croma**--
 
 Discription:-
-
 As a product owner, I need an aggregate monthly gross sales report for Croma India customers so that I can track how much sales this particular customer is generating for AtliQ and manage our relationships accordingly.
 
 The report should have the following fields,
@@ -15,30 +15,13 @@ Month
 Total gross sales amount to Croma India in this month
 SQL Query :-
 
-SELECT
-    S.date,
-    ROUND (SUM(g.gross_price * s.sold_quantity),2) AS gross_total_price
-FROM fact_sales_monthly s
-JOIN fact_gross_price g
-    ON g.product_code = s.product_code
-    AND g.fiscal_year = get_fiscal_year(s.date)
-WHERE customer_code = 90002002
-GROUP BY s.date
-ORDER BY s.date DESC
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/ac286bc1-bd29-46af-b36e-d75feb975096)
+
 
 Result :-
 
-date	gross_total_price
-2021-12-01	$ 19537146.56
-2021-10-01	$ 13908229.29
-2021-09-01	$ 11192823.08
-2021-08-01	$ 2349478.82
-2021-06-01	$ 2288587.45
-2021-05-01	$ 2181587.78
-2021-04-01	$ 2253574.91
-2021-02-01	$ 2355170.45
-2021-01-01	$ 2303086.37
-2020-12-01	$ 4078789.92
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/15cf4147-c510-4839-98f2-804560a0f2df)
+
 
 **2. Generate a yearly report for Croma India where there are two columns.**
 
@@ -50,29 +33,13 @@ Total Gross Sales amount in that Year from Croma
 
 SQL Query :-
 
-SELECT
-    get_fiscal_year(s.date) AS Fiscal_Year,
-    ROUND (SUM(g.gross_price * s.sold_quantity),2) AS gross_total_price
-FROM
-	fact_sales_monthly s
-JOIN
-	fact_gross_price g
-ON
-	g.product_code = s.product_code
-AND
-	g.fiscal_year = get_fiscal_year(s.date)
-WHERE customer_code = 90002002
-GROUP BY get_fiscal_year(date)
-ORDER BY fiscal_year DESC
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/d3048af6-ce94-4af7-943d-f980e88f1773)
+
 
 Result :-
 
-Fiscal Year	gross_total_price
-2022	        $ 44638198.92
-2021	        $ 23216512.22
-2020	        $ 6502181.91
-2019	        $ 3555079.02
-2018	        $ 1324097.44
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/8b21621b-ae4c-4188-b4eb-5c8ce944d56d)
+
 
 **3. Created stored proc for monthly gross sales report.**
 
@@ -88,47 +55,14 @@ Total gross sales in that month from a given customer
 
 SQL Query :-
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `get_monthly_gross_sales_for_customer`(
-	in_customer_code TEXT
-)
-BEGIN
-	SELECT
-		s.date,
-		ROUND(SUM(g.gross_price * s.sold_quantity),2) AS gross_monthly_sales
-	FROM
-		fact_sales_monthly s
-	JOIN
-		fact_gross_price g
-	ON
-		g.product_code = s.product_code
-	AND
-		g.fiscal_year = get_fiscal_year(s.date)
-	WHERE
-		FIND_IN_SET(s.customer_code, in_costomer_code)>0
-	GROUP BY s.date
-	ORDER BY s.date DESC;
-END
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/f602334d-df40-491d-aa77-4025b3264131)
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/7d4ac303-77c2-45cc-9299-792fcd702040)
 
 
 Result :-
 
-date	gross_monthly_sales
-2021-12-01	$ 19537146.56
-2021-10-01	$ 13908229.29
-2021-09-01	$ 11192823.08
-2021-08-01	$ 2349478.82
-2021-06-01	$ 2288587.45
-2021-05-01	$ 2181587.78
-2021-04-01	$ 2253574.91
-2021-02-01	$ 2355170.45
-2021-01-01	$ 2303086.37
-2020-12-01	$ 4078789.92
-2020-10-01	$ 3109316.88
-2020-09-01	$ 2296919.63
-2020-08-01	$ 799327.63
-2020-06-01	$ 362545.14
-2020-05-01	$ 145049.05
-2020-04-01	$ 130520.92
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/e20abae8-0756-4757-b8cb-ea92307e9775)
+
 
 
 **4. Stored proc for the market badge.**
@@ -146,35 +80,9 @@ Output
 Market badge
 SQL Query :-
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `get_market_badge`(
-	IN in_market VARCHAR(45),
-    IN in_fiscal_year YEAR,
-    OUT out_badge VARCHAR(45)
-)
-BEGIN
-	DECLARE qty INT DEFAULT 0;
-    #If value not given for market assume like default market is India
-    IF in_market = "" THEN
-		SET in_market = "India";
-	END IF;
-    #Retrive total qty for given market and fiscal year
-	SELECT
-		SUM(s.sold_quantity) AS total_qty
-	FROM fact_sales_monthly s
-	JOIN dim_customer c
-	ON s.customer_code = c.customer_code
-	WHERE
-		get_fiscal_year(s.date) = in_fiscal_year AND
-        c.market = in_market
-	GROUP BY c.market;
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/d4acae45-1da7-4e93-a532-270f228f3730)
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/5da14108-6a43-4de8-a167-375da0f4b459)
 
-    #Determine market badge
-    IF qty > 5000000 THEN
-		SET out_badge = "Gold";
-	ELSE
-		SET out_badge = "Silver";
-	END IF;
-END
 
 set @out_badge = '0';
 call gdb0041.get_market_badge('india', 2021, @out_badge);
@@ -193,31 +101,9 @@ date, fiscal_year, customer_code, customer, market, product_code, product, varia
 
 SQL Query :-
 
-CREATE
-    ALGORITHM = UNDEFINED
-    DEFINER = `root`@`localhost`
-    SQL SECURITY DEFINER
-VIEW `gross_sales` AS
-    SELECT
-		S.date,
-		S.fiscal_year,
-		S.customer_code,
-		C.customer,
-		C.market,
-		S.product_code,
-		P.product,
-		P.variant,
-		S.sold_quantity,
-		g.gross_price AS gross_price_per_item,
-		ROUND((s.sold_quantity * g.gross_price),2) AS gross_price_total
-	FROM fact_sales_monthly s
-	JOIN dim_customer c
-		ON s.customer_code = c.customer_code
-	JOIN dim_product p
-		ON s.product_code = p.product_code
-	JOIN fact_gross_price g
-		ON s.fiscal_year = g.fiscal_year
-		AND s.product_code = g.product_code
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/f80463c9-74fb-4941-a5c2-93a893a47a57)
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/fce1cee5-7308-4f0e-879b-2d6a03e11432)
+
 
 SELECT * FROM gdb0041.gross_sales;
 
@@ -235,98 +121,40 @@ We will probably write stored proc for this as we will also need this report goi
 
 Report for top markets
 SQL Query :-
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/1bf4b048-7870-4269-934f-d7c6fbdbe99b)
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `get_top_n_market_by_net_sales`(
-	in_fiscal_year INT,
-    in_top_n INT
-)
-BEGIN
-	SELECT
-		market,
-		ROUND(SUM(net_sales)/1000000,2) AS net_sales_mln
-	FROM net_sales
-	WHERE fiscal_year = in_fiscal_year
-	GROUP BY market
-	ORDER BY net_sales_mln DESC
-	LIMIT in_top_n;
-END
 
 call gdb0041.get_top_n_market_by_net_sales(2021, 5);
 
 Result :-
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/b6c71fad-19f5-4379-b04f-c95492951cc2)
 
-market	net sales mln
-India	  $ 210.67
-USA	  $ 132.05
-South Korea	$ 64.01
-Canada	  $ 45.89
-United Kingdom	$ 44.73
 
 **Report for top products**-
    
 SQL Query :-
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `get_top_n_product_by_net_sales`(
-	in_market VARCHAR(45),
-    in_fiscal_year INT,
-    in_top_n INT
-)
-BEGIN
-	SELECT
-		product,
-		ROUND(SUM(net_sales)/1000000,2) AS net_sales_mln
-	FROM net_sales
-	WHERE fiscal_year = in_fiscal_year
-		AND market = in_market
-	GROUP BY product
-	ORDER BY net_sales_mln DESC
-	LIMIT in_top_n;
-END
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/5671523d-9dd7-4bb6-b5e4-22f7e02bbb65)
+
 
 call gdb0041.get_top_n_product_by_net_sales('India', 2021, 5);
 
 Result :-
 
-product	net sales mln
-AQ BZ Allinl	$ 8.54
-AQ Qwerty	$ 7.22
-AQ Trigger	$ 6.78
-AQ Gen Y	$ 6.02
-AQ Trigger Ms	$ 5.74
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/5835d3c3-08fe-48c8-a9ec-c96cc1179bcd)
+
 
  **Report for top customers-**
 
 SQL Query :-
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/74d2e06b-c52a-415e-97b2-b7c8e468c85e)
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/c370d640-5dc5-4fe3-ab89-660346b613fc)
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `get_top_n_customer_by_net_sales`(
-	in_market VARCHAR(45),
-    in_fiscal_year INT,
-    in_top_n INT
-)
-BEGIN
-	SELECT
-		c.customer,
-		ROUND(SUM(net_sales)/1000000,2) AS net_sales_mln
-	FROM net_sales n
-	JOIN dim_customer c
-		ON n.customer_code = c.customer_code
-	WHERE fiscal_year = in_fiscal_year
-		AND n.market = in_market
-	GROUP BY c.customer
-	ORDER BY net_sales_mln DESC
-	LIMIT in_top_n;
-END
 
 call gdb0041.get_top_n_customer_by_net_sales('India', 2021, 5);
 
 Result :-
-
-customer	net sales mln
-Amazon	        $30.00
-Atliq Exclusive	$23.98
-Flipkart	$12.96
-Electricalsocity $12.31
-Propel	       $11.86
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/7ac24baf-e4aa-4a99-95fb-f89fa742edff)
 
 
 **7. Net sales % share Global.**--
@@ -336,36 +164,12 @@ Discription:-
 AS product owner, I want to see a bar Chart report for FY—2021 for top IO markets by % net sales.
 
 SQL Query :-
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/ec74625e-9d25-4d68-acbc-548ba6989463)
 
-WITH cte AS (
-	SELECT
-		C.customer,
-		ROUND(SUM(net_sales)/1000000,2) AS net_sales_mln
-	FROM net_sales n
-	JOIN dim_customer c
-		ON n.customer_code = c.customer_code
-	WHERE fiscal_year = 2021
-	GROUP BY c.customer
-)
-SELECT
-	*,
-	net_sales_mln*100/SUM(net_sales_mln) over() AS pct
-FROM cte
-ORDER BY net_sales_mln DESC
 
 Result :-
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/a412a481-4d58-4f19-81b8-7651820d0d96)
 
-customer	net sales mln	pct
-Amazon	$109.03	13.23%
-Atliq Exclusive	$79.92	9.7%
-Atliq e Store	$70.31	8.53%
-Sage	$27.07	3.29%
-Flipkart	$25.25	3.06%
-Leader	$24.52	2.98%
-Neptune	$21.01	2.55%
-Ebay	$19.88	2.41%
-Electricalsocity	$16.25	1.97%
-Synthetic	$16.10	1.95%
 
 Bar Chart :-
 
@@ -381,67 +185,22 @@ The end result should be bar charts in the following format for FY = 2021. Build
 
 SQL Query :-
 
-WITH cte AS (
-	SELECT
-		c.customer,
-		c.region,
-		ROUND(SUM(net_sales)/1000000,2) AS net_sales_mln
-	FROM net_sales n
-	JOIN dim_customer c
-		ON n.customer_code = c.customer_code
-	WHERE fiscal_year = 2021
-	GROUP BY c.customer, c.region
-)
-SELECT
-	*,
-	net_sales_mln*100/SUM(net_sales_mln) over(partition by region) AS pct
-FROM cte
-ORDER BY region, net_sales_mln DESC
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/9be92d75-9542-4aef-b8dd-2cfd17de622b)
 
 Result :-
 
 APAC Region-
 
-customer	region	net_sales_mln	pct
-Amazon	        APAC	$57.41	12.99%
-Atliq Exclusive	APAC	$51.58	11.67%
-Atliq e Store	APAC	$36.97	8.36%
-Leader	        APAC	$24.52	5.55%
-Sage	        APAC	$22.85	5.17%
-Neptune	        APAC	$21.01	4.75%
-Electricalsocity APAC	$16.25	3.68%
-Propel	        APAC	$14.14	3.2%
-Synthetic	APAC	$14.14	3.2%
-Flipkart	APAC	$12.96	2.93%
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/20dc548b-166d-471d-80f2-f3b636237560)
 
 
 EU Region-
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/6e5fa408-e1c9-41e5-81fc-1ece695c8b28)
 
-customer	region	net_sales_mln	pct
-Atliq e Store	EU	$19.83	       9.87%
-Amazon	        EU	$19.77	       9.84%
-Atliq Exclusive	EU	$13.39	       6.67%
-UniEuro	        EU	$9.63	       4.8%
-Expert	        EU	$8.38	       4.17%
-Chip 7	        EU	$7.23	       3.6%
-Radio Popular	EU	$6.95	       3.46%
-Media Markt	EU	$6.88	       3.43%
-ElkjÃ¸p	        EU	$6.76	       3.37%
-Sorefoz	        EU	$6.13	       3.05%
 
 NA Region-
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/3af72b19-2c4e-40be-a442-0e41a097fb75)
 
-customer	region	net_sales_mln	pct
-Amazon	        NA	$30.31	17.03%
-Atliq Exclusive	NA	$14.95	8.4%
-walmart	        NA	$12.63	7.1%
-Atliq e Store	NA	$12.42	6.98%
-Costco	        NA	$12.19	6.85%
-Staples	        NA	$11.49	6.46%
-Flipkart	NA	$10.35	5.82%
-Path	        NA	$9.10	5.11%
-Ebay	        NA	$8.74	4.91%
-Acclaimed StoresNA	$8.53	4.79%
 
 9. **Get top n products in each division by their quantity sold.**--
 
@@ -451,33 +210,13 @@ Write a stored proc for getting TOP n products in each division by their quantit
 
 SQL Query :-
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `get_top_n_product_by_net_sales`(
-	in_market VARCHAR(45),
-	in_fiscal_year INT,
-	in_top_n INT
-)
-BEGIN
-	SELECT
-		product,
-		ROUND(SUM(net_sales)/1000000,2) AS net_sales_mln
-	FROM net_sales
-	WHERE fiscal_year = in_fiscal_year
-		AND market = in_market
-	GROUP BY product
-	ORDER BY net_sales_mln DESC
-	LIMIT in_top_n;
-END
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/2a4180b4-b3f4-4e69-9040-b4ebdf425480)
+
 
 call gdb0041.get_top_n_product_by_net_sales('india', 2021, 5);
 
 Result :-
-
-product	net_sales_mln
-AQ BZ Allinl	$8.54
-AQ Qwerty	$7.22
-AQ Trigger	$6.78
-AQ Gen Y	$6.02
-AQ Trigger Ms	$5.74
+![image](https://github.com/Ashish890-R/SQL-Sales-by-product-customer-Analysis/assets/154528363/2ec6a1ca-8258-4c2b-be56-2831b1164fb0)
 
 
 **10. Creating a fact_act_est.**--
